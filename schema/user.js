@@ -13,7 +13,13 @@ const User = Schema({
     password: {
         type: String,
         required: true
+    },
+    coins:{
+        type: Number,
+        required:false,
+        default: 0,
+        min: 0
     }
-}, { collection: 'people' }, { __v: false });
+}, { collection: 'users' }, { __v: false });
 
 module.exports = mongoose.model('users', User);
