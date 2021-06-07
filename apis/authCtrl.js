@@ -1,26 +1,26 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const jwt = require("jsonwebtoken");
 const router = express.Router();
 
 const resp = require('../resp');
-
+const mailer = require('../utils/mailer');
+const { generateToken, hashPwd } = require('../utils/shared');
 const User = require('../schema/user');
-const JWT_SECRET = process.env.JWT_SECRET;
-const salt = bcrypt.genSaltSync(10);
-
-const generateToken = user => jwt.sign(JSON.stringify(user), JWT_SECRET);
-
-const hashPwd = password => bcrypt.hashSync(password, salt);
 
 router.post('/signup', (req, res) => {
     const data = req.body;
     if (data.password) data.password = hashPwd(data.password);
 
+    const code = Math.floor(Math.random() * 90000) + 10000;
+    data.auth_code = code;
+
     const user = new User(data);
     user.save((err, data) => {
         if (err) return resp.success(res, null, err.message);
-        delete user.password
+
+        mailer.verifyAuthToken(code);
+        delete user.password;
+        delete user.auth_code;
         const token = generateToken(data);
         return resp.success(res, { user, token });
     });
@@ -36,6 +36,19 @@ router.post('/login', (req, res) => {
 
         const token = generateToken(user);
         return resp.success(res, { user, token });
+    }).catch(err => resp.error(res, err));
+});
+
+router.post('/verifyCode', (req, res) => {
+    const { auth_code, email } = req.body;
+    if (!auth_code || !email) return resp.error(res, 'Provide auth code and email');
+
+    User.findOne({ email }).then(data => {
+        if (auth_code !== data.auth_code) return resp.error(res, 'Invalid code');
+        if(data.is_verified) return resp.error(res, 'User is already verified');
+        User.findOneAndUpdate({ email }, { is_verified: true }).then(rs => {
+            return resp.success(res, 'User is verified');
+        }).catch(err => resp.error(res, err));
     }).catch(err => resp.error(res, err));
 });
 

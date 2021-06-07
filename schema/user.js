@@ -14,6 +14,20 @@ const User = Schema({
         type: String,
         required: true
     },
+    auth_code: {
+        type: String,
+        required: true
+    },
+    is_admin:{
+        type: Boolean,
+        required: true,
+        default:false
+    },
+    is_verified:{
+        type: Boolean,
+        required: true,
+        default:false
+    },
     coins:{
         type: Number,
         required:false,

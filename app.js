@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 
-const auth = require('./apis/auth');
+const auth = require('./apis/authCtrl');
 const userCtrl = require('./apis/userCtrl');
 
 app.use(bodyParser.json());
