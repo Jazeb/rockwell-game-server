@@ -44,6 +44,7 @@ router.post('/verifyCode', (req, res) => {
     if (!auth_code || !email) return resp.error(res, 'Provide auth code and email');
 
     User.findOne({ email }).then(data => {
+        if(!data) return resp.error(res, 'User does not exist')
         if (auth_code !== data.auth_code) return resp.error(res, 'Invalid code');
         if(data.is_verified) return resp.error(res, 'User is already verified');
         User.findOneAndUpdate({ email }, { is_verified: true }).then(rs => {
