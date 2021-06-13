@@ -28,6 +28,11 @@ const User = Schema({
         required: true,
         default:false
     },
+    reset_password_code:{
+        type: String,
+        required: false,
+        default:false
+    },
     coins:{
         type: Number,
         required:false,

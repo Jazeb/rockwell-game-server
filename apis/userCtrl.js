@@ -7,6 +7,7 @@ const authenticateToken = require('../auth');
 const shared = require('../utils/shared');
 
 const User = require('../schema/user');
+const CoinsLimit = require('../schema/coinsLimit');
 
 router.put('/add/coins', authenticateToken, (req, res) => {
     const { coins, user_id } = req.body;
@@ -38,7 +39,7 @@ router.post('/sendCoins', authenticateToken, async (req, res) => {
         const _id = req.user._id;
         const user_coins = await User.findOne({ _id }, { coins: 1 });
         if (user_coins.coins < coins) return resp.error(res, 'Insufficient coins');
-        // const limit = await 
+        const limit = await CoinsLimit.findOne({});
     }
 });
 
@@ -51,6 +52,8 @@ router.post('/verifyCode', (req, res) => {
         return resp.success(res, 'Token is verified');
     }).catch(err => resp.error(res, err));
 });
+
+
 
 router.post('/updatePassword', async (req, res) => {
     const { email, new_password, confirm_password } = req.body;
