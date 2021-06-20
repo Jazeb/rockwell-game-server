@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+	<%- include('header.ejs'); %> 
+	<%- include('navbar.ejs'); %>
+	<div class="container">
+		<h3>Coins Limit: </h3>
+		<h4><%- coins_limit %> </h4>
+
+		<form action="/user/set/coins/limit" method="POST">
+			<input type="number" name="coins_limit" id="coins_limit" required>
+			<button type="submit">Set coins limit</button>
+		</form>
+	</div>
+</html>

@@ -32,12 +32,12 @@ const sendMail = email => {
     });
 }
 
-const verifyAuthToken = code => {
+const verifyAuthToken = data => {
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: email,
+        to: data.email,
         subject: 'Verify Email',
-        text: `Thank you for registering for our cool fun Games. Please use the code ${code} to verify your identity`
+        text: `Thank you for registering for our cool fun Games. Please use the code ${data.code} to verify your identity`
     };
 
     return new Promise((resolve, reject) => {

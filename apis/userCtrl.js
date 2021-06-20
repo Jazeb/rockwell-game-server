@@ -9,17 +9,24 @@ const shared = require('../utils/shared');
 const User = require('../schema/user');
 const CoinsLimit = require('../schema/coinsLimit');
 
-router.put('/add/coins', authenticateToken, (req, res) => {
+router.get('/', async (req, res) => {
+    const { coins_limit } = await CoinsLimit.findOne();
+    return res.render('index', { coins_limit });
+});
+
+// Admin will manually add coins to any user
+router.post('/add/coins', (req, res) => {
+    console.log(req.body);
     const { coins, user_id } = req.body;
     if (!coins || coins <= 0) return resp.error(res, 'Provide coins to update');
     if (!user_id) return resp.error(res, 'Provide user id');
 
     User.findOne({ _id: user_id }).then((user) => {
         if (!user) return resp.error(res, 'User not found');
-        user.coins = user.coins + coins;
+        user.coins = user.coins + +coins;
         user.save((err, result) => {
             if (err) return resp.success(res, null, err.message);
-            return resp.success(res, 'Coins updated');
+            return res.redirect('/user/all');
         });
     }).catch(err => resp.success(res, null, err.message));
 });
@@ -32,14 +39,16 @@ router.post('/resetPassword', async (req, res) => {
     else resp.error(res, 'User does not exist');
 });
 
-router.post('/sendCoins', authenticateToken, async (req, res) => {
-    const { is_admin } = req.user;
+router.post('/sendCoins', async (req, res) => {
+    const { is_admin } = true;//req.user;
     const coins = req.body.coins;
     if (!is_admin) {
         const _id = req.user._id;
         const user_coins = await User.findOne({ _id }, { coins: 1 });
-        if (user_coins.coins < coins) return resp.error(res, 'Insufficient coins');
-        const limit = await CoinsLimit.findOne({});
+        const { coins_limit } = await CoinsLimit.findOne({});
+        
+        if (user_coins.coins < coins || user_coins.coins < coins_limit) return resp.error(res, 'Insufficient coins');
+        User.findOne({is_admin:true})
     }
 });
 
@@ -53,8 +62,6 @@ router.post('/verifyCode', (req, res) => {
     }).catch(err => resp.error(res, err));
 });
 
-
-
 router.post('/updatePassword', async (req, res) => {
     const { email, new_password, confirm_password } = req.body;
     if (!email || !new_password || !confirm_password) return resp.error(res, 'Provide new and confirm password');
@@ -66,5 +73,14 @@ router.post('/updatePassword', async (req, res) => {
         return resp.success(res, 'Password is updated.');
     }).catch(err => resp.error(res, err));
 });
+
+router.get('/all', (req, res) => {
+    User.find({is_admin: false}).then(users => {
+        res.render('users', { users });
+    }).catch(err => console.error(err));
+});
+
+
+router.post('/set/coins/limit', (req, res) => CoinsLimit.update({ $set: { coins_limit: req.body.coins_limit } }).then(_ => res.redirect('/home')));
 
 module.exports = router;

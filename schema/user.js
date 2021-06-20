@@ -16,7 +16,7 @@ const User = Schema({
     },
     auth_code: {
         type: String,
-        required: true
+        required: false
     },
     is_admin:{
         type: Boolean,

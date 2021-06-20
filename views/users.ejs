@@ -1,0 +1,30 @@
+<%- include('header.ejs'); %> 
+<%- include('navbar.ejs'); %> 
+<body>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Coins</th>
+                <th>Coins Limit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(let user of users) { %>
+                <tr>
+                    <td><%- user.user_name %> </td>
+                    <td><%- user.email %> </td>
+                    <td><%- user.coins  %> </td>
+                    <td>
+                        <form action="/user/add/coins" method="POST">
+                            <input type="number" name="coins" id="coins">
+                            <input type="hidden" name="user_id" id="user_id" value=<%- user._id %> >
+                            <button button-primary>Add Coins</button>
+                        </form>
+                        </td>
+                </tr>
+            <% } %> 
+        </tbody>
+    </table>
+</body>

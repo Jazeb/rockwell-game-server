@@ -17,8 +17,8 @@ router.post('/signup', (req, res) => {
     const user = new User(data);
     user.save((err, data) => {
         if (err) return resp.success(res, null, err.message);
-
-        mailer.verifyAuthToken(code);
+        const data = { code, email: req.body.email };
+        mailer.verifyAuthToken(data);
         delete user.password;
         delete user.auth_code;
         const token = generateToken(data);
@@ -44,9 +44,9 @@ router.post('/verifyCode', (req, res) => {
     if (!auth_code || !email) return resp.error(res, 'Provide auth code and email');
 
     User.findOne({ email }).then(data => {
-        if(!data) return resp.error(res, 'User does not exist')
+        if (!data) return resp.error(res, 'User does not exist')
         if (auth_code !== data.auth_code) return resp.error(res, 'Invalid code');
-        if(data.is_verified) return resp.error(res, 'User is already verified');
+        if (data.is_verified) return resp.error(res, 'User is already verified');
         User.findOneAndUpdate({ email }, { is_verified: true }).then(rs => {
             return resp.success(res, 'User is verified');
         }).catch(err => resp.error(res, err));
