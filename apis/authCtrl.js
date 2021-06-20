@@ -17,8 +17,8 @@ router.post('/signup', (req, res) => {
     const user = new User(data);
     user.save((err, data) => {
         if (err) return resp.success(res, null, err.message);
-        const data = { code, email: req.body.email };
-        mailer.verifyAuthToken(data);
+        const email_data = { code, email: req.body.email };
+        mailer.verifyAuthToken(email_data);
         delete user.password;
         delete user.auth_code;
         const token = generateToken(data);
