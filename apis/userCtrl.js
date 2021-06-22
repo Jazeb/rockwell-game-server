@@ -5,6 +5,7 @@ const resp = require('../resp');
 const mailer = require('../utils/mailer');
 const authenticateToken = require('../auth');
 const shared = require('../utils/shared');
+const FCM = require('fcm-node');
 
 const User = require('../schema/user');
 const CoinsLimit = require('../schema/coinsLimit');
@@ -16,7 +17,6 @@ router.get('/', async (req, res) => {
 
 // Admin will manually add coins to any user
 router.post('/add/coins', (req, res) => {
-    console.log(req.body);
     const { coins, user_id } = req.body;
     if (!coins || coins <= 0) return resp.error(res, 'Provide coins to update');
     if (!user_id) return resp.error(res, 'Provide user id');
@@ -39,17 +39,19 @@ router.post('/resetPassword', async (req, res) => {
     else resp.error(res, 'User does not exist');
 });
 
-router.post('/sendCoins', async (req, res) => {
-    const { is_admin } = true;//req.user;
-    const coins = req.body.coins;
-    if (!is_admin) {
-        const _id = req.user._id;
-        const user_coins = await User.findOne({ _id }, { coins: 1 });
-        const { coins_limit } = await CoinsLimit.findOne({});
-        
-        if (user_coins.coins < coins || user_coins.coins < coins_limit) return resp.error(res, 'Insufficient coins');
-        User.findOne({is_admin:true})
-    }
+router.post('/sendCoins', authenticateToken, async (req, res) => {
+    const { _id } = req.user;
+    const { coins } = req.body;
+
+    if (!coins) return resp.error(res, 'Provide coins you want to send');
+    const user_coins = await User.findOne({ _id }, { coins: 1 });
+    const { coins_limit } = await CoinsLimit.findOne({});
+
+    if (user_coins.coins < coins) return resp.error(res, 'Insufficient coins');
+    if (coins > coins_limit) return resp.error(res, `Not allowed to send more than ${coins_limit} coins`);
+    User.findOneAndUpdate({ is_admin: true }, { $inc: { coins } })
+        .then(_ => resp.success(res, 'Coins sent to admin'))
+        .catch(err => resp.error(res, 'Error sending coins to admin', err));
 });
 
 router.post('/verifyCode', (req, res) => {
@@ -75,9 +77,43 @@ router.post('/updatePassword', async (req, res) => {
 });
 
 router.get('/all', (req, res) => {
-    User.find({is_admin: false}).then(users => {
+    User.find({ is_admin: false }).then(users => {
         res.render('users', { users });
     }).catch(err => console.error(err));
+});
+
+router.put('/updateFCM', authenticateToken, (req, res) => {
+    const { _id } = req.user;
+    const { fcm_token } = req.body;
+    if (!fcm_token) return resp.error(res, 'Provide fcm token to update');
+
+    User.findOneAndUpdate({ _id }, { fcm_token }).then(_ => resp.success(res, 'fcm token is updated.'))
+        .catch(err => resp.error(res, err));
+});
+
+router.post('/sendNotification', async (req, res) => {
+    const fcm = new FCM(process.env.FCM_KEY)
+    const registration_ids = [];
+    const ids = await User.find({}, { fcm_token: 1 });
+    for (let id of ids) registration_ids.push(id);
+
+    const message = {
+        registration_ids,
+        collapse_key: 'DOWNLOAD_APP',
+        notification: {
+            title: 'Download new version',
+            body: `Please download the new version of app.`,
+        },
+        data: {
+            title: 'Download new version',
+            body: `Please download the new version of app`,
+        }
+    }
+    return fcm.send(message, (err, response) => {
+        if (err) return resp.error(res, 'Error sending notification');
+        console.log(response);
+        return res.redirect('/home');
+    });
 });
 
 

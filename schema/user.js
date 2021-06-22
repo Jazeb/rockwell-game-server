@@ -18,24 +18,29 @@ const User = Schema({
         type: String,
         required: false
     },
-    is_admin:{
+    is_admin: {
         type: Boolean,
         required: true,
-        default:false
+        default: false
     },
-    is_verified:{
+    is_verified: {
         type: Boolean,
         required: true,
-        default:false
+        default: false
     },
-    reset_password_code:{
+    reset_password_code: {
         type: String,
         required: false,
-        default:false
+        default: false
     },
-    coins:{
+    fcm_token: {
+        type: String,
+        required: false,
+        default: null
+    },
+    coins: {
         type: Number,
-        required:false,
+        required: false,
         default: 0,
         min: 0
     }

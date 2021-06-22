@@ -1,13 +1,14 @@
 <%- include('header.ejs'); %> 
 <%- include('navbar.ejs'); %> 
 <body>
+    <div>
     <table class="table table-striped">
         <thead>
             <tr>
                 <th>Username</th>
                 <th>Email</th>
                 <th>Coins</th>
-                <th>Coins Limit</th>
+                <th>Credit Coins</th>
             </tr>
         </thead>
         <tbody>
@@ -18,13 +19,17 @@
                     <td><%- user.coins  %> </td>
                     <td>
                         <form action="/user/add/coins" method="POST">
-                            <input type="number" name="coins" id="coins">
-                            <input type="hidden" name="user_id" id="user_id" value=<%- user._id %> >
-                            <button button-primary>Add Coins</button>
+                            <div class="input-group">
+                                <input type="number" name="coins" id="coins">
+                                <input type="hidden" name="user_id" id="user_id" value=<%- user._id %> >
+                                <button class="btn btn-primary btn-sm">Add Coins</button>
+
+                            </div>
                         </form>
                         </td>
                 </tr>
             <% } %> 
         </tbody>
     </table>
+</div>
 </body>
