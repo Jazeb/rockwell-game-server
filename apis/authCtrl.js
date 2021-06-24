@@ -13,6 +13,7 @@ router.post('/signup', (req, res) => {
 
     const code = Math.floor(Math.random() * 90000) + 10000;
     data.auth_code = code;
+    data.coins = 5000;
 
     const user = new User(data);
     user.save((err, data) => {
