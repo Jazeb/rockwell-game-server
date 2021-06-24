@@ -45,6 +45,7 @@ router.post('/sendCoins', authenticateToken, async (req, res) => {
 
     if (!coins) return resp.error(res, 'Provide coins you want to send');
     const user_coins = await User.findOne({ _id }, { coins: 1 });
+    if(!user_coins) return resp.error(res, 'User does not exist');
     const { coins_limit } = await CoinsLimit.findOne({});
 
     if (user_coins.coins < coins) return resp.error(res, 'Insufficient coins');
