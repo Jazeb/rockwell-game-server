@@ -50,16 +50,16 @@ const sendPasswordResetMail = email => {
 
 const verifyAuthToken = data => {
     const params = {
-        Destination: { ToAddresses: [email] },
+        Destination: { ToAddresses: [data.email] },
         Message: {
             Body: {
                 Html: {
                     Charset: "UTF-8",
-                    Data: `Thank you for registering for our cool fun Games. Please use the code ${data.code} to verify your identity`
+                    Data: `Thank you for registration on Eagle Network Games Apps. Please use the code ${data.code} to verify and protect your account and game points.`
                 },
                 Text: {
                     Charset: "UTF-8",
-                    Data: `Thank you for registering for our cool fun Games. Please use the code ${data.code} to verify your identity`
+                    Data: `Thank you for registration on Eagle Network Games Apps. Please use the code ${data.code} to verify and protect your account and game points.`
                 }
             },
             Subject: {
