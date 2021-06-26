@@ -34,7 +34,7 @@ router.post('/add/coins', (req, res) => {
 router.post('/resetPassword', async (req, res) => {
     const { email } = req.body;
     if (!email) return resp.error(res, 'Provide email');
-    const result = await mailer.sendMail(email);
+    const result = await mailer.sendPasswordResetMail(email);
     if (result) return resp.success(res, 'Email sent to user');
     else resp.error(res, 'User does not exist');
 });
