@@ -40,7 +40,7 @@ const sendPasswordResetMail = email => {
         const sendPromise = new AWS.SES({ apiVersion: '2010-12-01' }).sendEmail(params).promise();
         sendPromise.then(data => {
             console.log(data.MessageId);
-            User.findOneAndUpdate({ email }, { $set: { reset_password_code: new_pwd } }).then(result => {
+            User.findOneAndUpdate({ email }, { $set: { reset_password_code: num } }).then(result => {
                 if (!result) return resolve(false);
                 return resolve(true);
             }).catch(err => reject(err));
