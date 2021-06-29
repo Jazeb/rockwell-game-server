@@ -1,8 +1,8 @@
 <%- include('header.ejs'); %> 
-<%- include('navbar.ejs'); %> 
+<%- include('nav.ejs'); %> 
 <body>
     <div>
-    <table class="table table-striped">
+    <table class="table table-striped" id="tab">
         <thead>
             <tr>
                 <th>Username</th>
@@ -32,4 +32,19 @@
         </tbody>
     </table>
 </div>
+<div class="container">
+    <a href="javascript:someFunction()">Export to Excel</a>
+</div>
+<script src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>
+<script type="text/javascript">
+
+function someFunction() {
+    TableToExcel.convert(document.getElementById("tab"), {
+            name: "data.xlsx",
+            sheet: {
+            name: "Sheet1"
+        }
+    });
+}
+</script>
 </body>

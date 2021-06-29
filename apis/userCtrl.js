@@ -11,8 +11,14 @@ const User = require('../schema/user');
 const CoinsLimit = require('../schema/coinsLimit');
 
 router.get('/', async (req, res) => {
-    const { coins_limit } = await CoinsLimit.findOne();
-    return res.render('index', { coins_limit });
+    if (req.session.loggedin) {
+        const { _id } = req.session.user.user;
+        const { coins_limit } = await CoinsLimit.findOne();
+        const { coins } = await User.findOne({ _id });
+
+        return res.render('home', { coins_limit, coins });
+    }
+    else return res.render('login');
 });
 
 // Admin will manually add coins to any user
@@ -45,7 +51,7 @@ router.post('/sendCoins', authenticateToken, async (req, res) => {
 
     if (!coins) return resp.error(res, 'Provide coins you want to send');
     const user_coins = await User.findOne({ _id }, { coins: 1 });
-    if(!user_coins) return resp.error(res, 'User does not exist');
+    if (!user_coins) return resp.error(res, 'User does not exist');
     const { coins_limit } = await CoinsLimit.findOne({});
 
     if (user_coins.coins < coins) return resp.error(res, 'Insufficient coins');
@@ -78,8 +84,12 @@ router.post('/updatePassword', async (req, res) => {
 });
 
 router.get('/all', (req, res) => {
-    User.find({ is_admin: false }).then(users => {
-        res.render('users', { users });
+
+    User.find({ is_admin: false }).then(async users => {
+        const { _id } = req.session.user.user;
+        const { coins_limit } = await CoinsLimit.findOne();
+        const { coins } = await User.findOne({ _id });
+        return res.render('users', { users, coins_limit, coins });
     }).catch(err => console.error(err));
 });
 
@@ -111,7 +121,7 @@ router.post('/sendNotification', async (req, res) => {
         }
     }
     return fcm.send(message, (err, response) => {
-        if (err) return resp.error(res, 'Error sending notification');
+        if (err) return resp.error(res, 'Error sending notification', err);
         console.log(response);
         return res.redirect('/home');
     });
@@ -119,5 +129,6 @@ router.post('/sendNotification', async (req, res) => {
 
 
 router.post('/set/coins/limit', (req, res) => CoinsLimit.update({ $set: { coins_limit: req.body.coins_limit } }).then(_ => res.redirect('/home')));
+
 
 module.exports = router;

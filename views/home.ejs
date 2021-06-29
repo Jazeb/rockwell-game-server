@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include('header.ejs'); %>
+<body>
+    <%- include('nav.ejs'); %> 
+    <div class="container">
+        <h3>Coins Limit: </h3>
+        <h4><%- coins_limit %> </h4>
+        <div>
+            <form action="/user/set/coins/limit" method="POST">
+                <input type="number" name="coins_limit" id="coins_limit" required>
+                <button type="submit">Set coins limit</button>
+            </form>
+        </div>
+    </div>
+    <div style="margin-top: 25px;" class="container">
+        <p>Send push notification to users to force them to install latest app
+            <form action="/user/sendNotification" method="POST">
+                <button style="margin-top: 0px;" class="btn btn-primary" type="submit">Send Notification</button>
+            </form>
+        </p>
+    </div>
+    
+    <div class="container">
+        <h3>
+            Current Balance: <%- coins %> 
+        </h3>
+    </div>
+</body>
+</html>
