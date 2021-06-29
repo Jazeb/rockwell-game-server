@@ -2,6 +2,9 @@
 <%- include('nav.ejs'); %> 
 <body>
     <div>
+        <div class="ml-4 mt-4 mb-4">
+            <a href="javascript:someFunction()">Export to Excel</a>
+        </div>
     <table class="table table-striped" id="tab">
         <thead>
             <tr>
@@ -32,9 +35,7 @@
         </tbody>
     </table>
 </div>
-<div class="container">
-    <a href="javascript:someFunction()">Export to Excel</a>
-</div>
+
 <script src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>
 <script type="text/javascript">
 
