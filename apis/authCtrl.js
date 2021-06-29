@@ -64,12 +64,14 @@ router.post('/admin/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return resp.error(res, 'Provide email and password');
     const { coins_limit } = await CoinsLimit.findOne();
-    User.findOne({ email }).then(user => {
+    User.findOne({ email }).then(async user => {
         if (!user) return resp.error(res, 'Invalid user');
         if (!bcrypt.compareSync(password, user.password)) return resp.error(res, 'Invalid password');
-        req.session.user = { user };
+        req.session.user = user;
         req.session.loggedin = true;
-        return res.render('home', { coins_limit });
+
+        const { coins } = await User.findOne({ _id:user._id });
+        return res.render('home', { coins_limit, coins });
 
     }).catch(err => resp.error(res, err));
 });
@@ -93,7 +95,8 @@ router.post('/admin/signup', (req, res) => {
         req.session.loggedin = true;
 
         const { coins_limit } = await CoinsLimit.findOne();
-        return res.render('home', { coins_limit });
+        const { coins } = data;
+        return res.render('home', { coins_limit, coins });
     });
 });
 

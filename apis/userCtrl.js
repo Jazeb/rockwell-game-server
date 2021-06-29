@@ -12,7 +12,7 @@ const CoinsLimit = require('../schema/coinsLimit');
 
 router.get('/', async (req, res) => {
     if (req.session.loggedin) {
-        const { _id } = req.session.user.user;
+        const { _id } = req.session.user;
         const { coins_limit } = await CoinsLimit.findOne();
         const { coins } = await User.findOne({ _id });
 
@@ -86,7 +86,7 @@ router.post('/updatePassword', async (req, res) => {
 router.get('/all', (req, res) => {
 
     User.find({ is_admin: false }).then(async users => {
-        const { _id } = req.session.user.user;
+        const { _id } = req.session.user;
         const { coins_limit } = await CoinsLimit.findOne();
         const { coins } = await User.findOne({ _id });
         return res.render('users', { users, coins_limit, coins });
