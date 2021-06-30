@@ -9,6 +9,7 @@ const FCM = require('fcm-node');
 
 const User = require('../schema/user');
 const CoinsLimit = require('../schema/coinsLimit');
+const AdminCoins = require('../schema/adminCoins');
 
 router.get('/', async (req, res) => {
     if (req.session.loggedin) {
@@ -46,19 +47,25 @@ router.post('/resetPassword', async (req, res) => {
 });
 
 router.post('/sendCoins', authenticateToken, async (req, res) => {
-    const { _id } = req.user;
-    const { coins } = req.body;
+    try {
+        const { _id, email, user_name } = req.user;
+        const { coins } = req.body;
 
-    if (!coins) return resp.error(res, 'Provide coins you want to send');
-    const user_coins = await User.findOne({ _id }, { coins: 1 });
-    if (!user_coins) return resp.error(res, 'User does not exist');
-    const { coins_limit } = await CoinsLimit.findOne({});
+        if (!coins) return resp.error(res, 'Provide coins you want to send');
+        const user_coins = await User.findOne({ _id }, { coins: 1 });
+        if (!user_coins) return resp.error(res, 'User does not exist');
+        const { coins_limit } = await CoinsLimit.findOne({});
 
-    if (user_coins.coins < coins) return resp.error(res, 'Insufficient coins');
-    if (coins > coins_limit) return resp.error(res, `Not allowed to send more than ${coins_limit} coins`);
-    User.findOneAndUpdate({ is_admin: true }, { $inc: { coins } })
-        .then(_ => resp.success(res, 'Coins sent to admin'))
-        .catch(err => resp.error(res, 'Error sending coins to admin', err));
+        if (user_coins.coins < coins) return resp.error(res, 'Insufficient coins');
+        if (coins > coins_limit) return resp.error(res, `Not allowed to send more than ${coins_limit} coins`);
+        User.findOneAndUpdate({ is_admin: true }, { $inc: { coins } })
+            .then(_ => resp.success(res, 'Coins sent to admin'))
+            .catch(err => resp.error(res, 'Error sending coins to admin', err));
+
+        await AdminCoins.create({ coins_sent: coins, email, user_name });
+    } catch (error) {
+        console.error(error);
+    }
 });
 
 router.post('/verifyCode', (req, res) => {
@@ -113,11 +120,11 @@ router.post('/sendNotification', async (req, res) => {
         collapse_key: 'DOWNLOAD_APP',
         notification: {
             title: 'Download new version',
-            body: `Please download the new version of app.`,
+            body: `There is a new game app update on app store, please update app for better experience`,
         },
         data: {
             title: 'Download new version',
-            body: `Please download the new version of app`,
+            body: `There is a new game app update on app store, please update app for better experience`,
         }
     }
     return fcm.send(message, (err, response) => {
@@ -127,8 +134,43 @@ router.post('/sendNotification', async (req, res) => {
     });
 });
 
+router.get('/send/customNotification', (req, res) => {
+    return res.render('push_notification');
+});
+
+router.post('/send/customNotification', async (req, res) => {
+    const { message, title } = req.body;
+    const fcm = new FCM(process.env.FCM_KEY)
+    const registration_ids = [];
+    const ids = await User.find({}, { fcm_token: 1 });
+    for (let id of ids) registration_ids.push(id);
+
+    const Message = {
+        registration_ids,
+        collapse_key: 'DOWNLOAD_APP',
+        notification: {
+            title,
+            body: message
+        },
+        data: {
+            title,
+            body: message
+        }
+    }
+
+    return fcm.send(Message, (err, response) => {
+        if (err) return resp.error(res, 'Error sending notification', err);
+        console.log(response);
+        return res.redirect('/user/send/customNotification');
+    });
+});
+
 
 router.post('/set/coins/limit', (req, res) => CoinsLimit.update({ $set: { coins_limit: req.body.coins_limit } }).then(_ => res.redirect('/home')));
 
+// send admin coins history
+router.get('/admin/coins', (req, res) => {
+    AdminCoins.find({}).then(data => res.render('admin_coins', { data }))
+});
 
 module.exports = router;

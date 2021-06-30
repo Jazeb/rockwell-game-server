@@ -1,0 +1,26 @@
+<%- include('header.ejs'); %> 
+<%- include('nav.ejs'); %> 
+<body>
+    <div>
+    <table class="table table-striped" id="tab">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Coins</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(let d of data) { %>
+                <tr>
+                    <td><%- d.user_name %> </td>
+                    <td><%- d.email %> </td>
+                    <td><%- d.coins_sent  %> </td>
+                    <td><%- d.date  %> </td>
+                </tr>
+            <% } %> 
+        </tbody>
+    </table>
+</div>
+</body>

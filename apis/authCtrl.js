@@ -64,13 +64,13 @@ router.post('/admin/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return resp.error(res, 'Provide email and password');
     const { coins_limit } = await CoinsLimit.findOne();
-    User.findOne({ email }).then(async user => {
+    User.findOne({ email, is_admin:true }).then(async user => {
         if (!user) return resp.error(res, 'Invalid user');
         if (!bcrypt.compareSync(password, user.password)) return resp.error(res, 'Invalid password');
         req.session.user = user;
         req.session.loggedin = true;
 
-        const { coins } = await User.findOne({ _id:user._id });
+        const { coins } = await User.findOne({ _id: user._id });
         return res.render('home', { coins_limit, coins });
 
     }).catch(err => resp.error(res, err));
@@ -78,25 +78,13 @@ router.post('/admin/login', async (req, res) => {
 
 // admin signup
 router.post('/admin/signup', (req, res) => {
+    const _id = req.session.user._id;
     const data = req.body;
     if (data.password) data.password = hashPwd(data.password);
 
-    const code = Math.floor(Math.random() * 90000) + 10000;
-    data['coins'] = 3000;
-    data['is_admin'] = true;
-    data['auth_code'] = code;
-    data['is_verified'] = true;
-
-    const user = new User(data);
-    user.save(async (err, data) => {
-        if (err) return resp.success(res, null, err.message);
-        delete user.password;
-        delete user.auth_code;
-        req.session.loggedin = true;
-
-        const { coins_limit } = await CoinsLimit.findOne();
-        const { coins } = data;
-        return res.render('home', { coins_limit, coins });
+    User.findOneAndUpdate({ _id }, { $set: { email: data.email, user_name: data.user_name, password: data.password } }).then(async _ => {
+        req.session.destroy();
+        return res.render('login');
     });
 });
 
