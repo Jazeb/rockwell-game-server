@@ -28,7 +28,7 @@ const sendPasswordResetMail = email => {
 }
 
 const verifyAuthToken = data => {
-    const data = {
+    const mail_data = {
         from: SENDER,
         to: email,
         subject: 'CryptokarBox Verify Authentication',
@@ -36,7 +36,7 @@ const verifyAuthToken = data => {
     };
 
     return new Promise((resolve, reject) => {
-        mailgun.messages().send(data, (err, result) => {
+        mailgun.messages().send(mail_data, (err, result) => {
             if (err) return reject(err);
             console.log(result);
             return resolve(true);
