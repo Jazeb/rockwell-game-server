@@ -30,15 +30,16 @@ const sendPasswordResetMail = email => {
 const verifyAuthToken = data => {
     const mail_data = {
         from: SENDER,
-        to: email,
+        to: data.email,
         subject: 'CryptokarBox Verify Authentication',
         text: `Thank you for registration on Eagle Network Games Apps. Please use the code ${data.code} to verify and protect your account and game points.`
     };
 
+    const mailgun = new Mailgun({ apiKey: API_KEY, domain: DOMAIN });
     return new Promise((resolve, reject) => {
         mailgun.messages().send(mail_data, (err, result) => {
+            console.log(err || result);
             if (err) return reject(err);
-            console.log(result);
             return resolve(true);
         });
     });
