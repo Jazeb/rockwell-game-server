@@ -56,7 +56,7 @@ router.post('/sendCoins', authenticateToken, async (req, res) => {
 
         if (!user) 
             return resp.error(res, 'User does not exist');
-            
+
         if(!user.is_verified) 
             return resp.error(res, 'User is not verified');
         
@@ -69,6 +69,7 @@ router.post('/sendCoins', authenticateToken, async (req, res) => {
             .catch(err => resp.error(res, 'Error sending coins to admin', err));
 
         await AdminCoins.create({ coins_sent: coins, email, user_name });
+        await User.findOneAndUpdate({_id}, {$inc:{ coins: -coins }})
     } catch (error) {
         console.error(error);
     }
