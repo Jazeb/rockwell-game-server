@@ -52,11 +52,17 @@ router.post('/sendCoins', authenticateToken, async (req, res) => {
         const { coins } = req.body;
 
         if (!coins) return resp.error(res, 'Provide coins you want to send');
-        const user_coins = await User.findOne({ _id }, { coins: 1 });
-        if (!user_coins) return resp.error(res, 'User does not exist');
+        const user = await User.findOne({ _id }, { coins: 1, is_verified:1 });
+
+        if (!user) 
+            return resp.error(res, 'User does not exist');
+            
+        if(!user.is_verified) 
+            return resp.error(res, 'User is not verified');
+        
         const { coins_limit } = await CoinsLimit.findOne({});
 
-        if (user_coins.coins < coins) return resp.error(res, 'Insufficient coins');
+        if (user.coins < coins) return resp.error(res, 'Insufficient coins');
         if (coins > coins_limit) return resp.error(res, `Not allowed to send more than ${coins_limit} coins`);
         User.findOneAndUpdate({ is_admin: true }, { $inc: { coins } })
             .then(_ => resp.success(res, 'Coins sent to admin'))
