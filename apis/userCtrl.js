@@ -119,8 +119,8 @@ router.put('/updateFCM', authenticateToken, (req, res) => {
 router.post('/sendNotification', async (req, res) => {
     const fcm = new FCM(process.env.FCM_KEY)
     const registration_ids = [];
-    const ids = await User.find({}, { fcm_token: 1 });
-    for (let id of ids) registration_ids.push(id);
+    const ids = await User.find({}, { fcm_token: 1, _id:0 });
+    for (let id of ids) id.fcm_token && registration_ids.push(id.fcm_token);
 
     const message = {
         registration_ids,
