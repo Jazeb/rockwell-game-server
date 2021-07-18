@@ -13,7 +13,7 @@ const sendPasswordResetMail = email => {
         const data = {
             from: SENDER,
             to: email,
-            subject: 'CryptokarBox Password Reset',
+            subject: 'Eagle Network Games Password Reset',
             text: `You reset password code is ${num}`,
         };
         mailgun.messages().send(data, function (err, body) {
@@ -31,7 +31,7 @@ const verifyAuthToken = data => {
     const mail_data = {
         from: SENDER,
         to: data.email,
-        subject: 'CryptokarBox Verify Authentication',
+        subject: 'Eagle Network Games Authentication',
         text: `Thank you for registration on Eagle Network Games Apps. Please use the code ${data.code} to verify and protect your account and game points.`
     };
 
